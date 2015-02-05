@@ -1,8 +1,8 @@
 # wp-no-white-screen
 
-This plugin helps troubleshoot issues with the infamous WordPress WSOD. Most errors can be caught with WP-DEBUG turned on using tools like X-Debug but some of the fatal errors don't come through either with WP-DEBUG or your PHP error handler. This is beacuse PHP lets WP "Handle" the error and when WP misses it it gets missed.
+This plugin helps troubleshoot issues with the infamous WordPress WSOD. Most errors can be caught with WP-DEBUG turned on using tools like X-Debug but some of the fatal errors don't come through either with WP-DEBUG or your PHP error handler. This is beacuse PHP lets WP "Handle" the error - the way WP handles an fatal error is to not display it [the reason is to increase security, since error messages often reveal information that can be used to leverage an attack on a site]
 
-Plugin developers and Advanced users who troubleshoot complex issues will find this tool handy. 
+Plugin developers and Advanced users who troubleshoot complex issues will find this tool handy. No more messing with your PHP configuration or blind-testing to find out what's going on!
 
 
 # Usage
@@ -38,4 +38,5 @@ Further Reading
 
 If you still don't see any errors, then it's likely that there's something fundamentally wrong with WordPress. You should start debugging `/wp-settings.php` by adding breakpoints and identifying the last execution point(or line). 
 
-*Remember to remove this file again after debugging the error!*
+**IMPORTANT** *Remember to remove this file again after debugging the error!*
+Leaving it will cost your server valuable performance and can also expose error information to the public, which decreases your sites security
