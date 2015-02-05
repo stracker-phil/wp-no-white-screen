@@ -117,6 +117,8 @@ class No_White_Screen_Of_Death {
 	}
 
 	public function init() {
+		if ( defined( 'WP_DEBUG_CORE' ) && ! WP_DEBUG_CORE ) { return; }
+
 		error_reporting( E_ALL ); // Not sure if this is needed, but we'll add it!
 
 		set_error_handler( array( $this, 'process_error' ) );
