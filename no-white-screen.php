@@ -40,7 +40,9 @@ class No_White_Screen_Of_Death {
 		$this->dump(
 			$exception->getMessage(),
 			'Exception',
-			$exception->getTrace()
+			$exception->getTrace(),
+			$exception->getFile(),
+			$exception->getLine()
 		);
 	}
 
@@ -64,37 +66,43 @@ class No_White_Screen_Of_Death {
 
 
 		$trace = debug_backtrace();
-		$this->dump( $errstr, $type, $trace );
+		$this->dump( $errstr, $type, $trace, $errfile, $errline );
 
 		if ( $fatal ) {
+			echo '<h1>Fatal error. Terminate request!</h1>';
 			exit( 1 );
 		}
 	}
 
 	private function dump( $message, $type, $trace, $err_file = false, $err_line = false ) {
-		array_shift( $trace );
-
 		if ( ! empty( $err_file ) ) {
-			$file_pos = " at $err_file [$err_line] :";
+			$file_pos = "In $err_file [line $err_line]";
 		} else {
 			$file_pos = '';
 		}
 
 		if ( php_sapi_name() == 'cli' ) {
-			echo 'Backtrace from ' . $type . ' "' . $message . '"' . $file_pos . ':' . "\n";
+			if ( ! empty( $file_pos ) ) {
+				$file_pos = "\n" . $file_pos;
+			}
+			echo 'Backtrace from ' . $type . ' "' . $message . '"' . $file_pos . "\n";
 			foreach ( $trace as $item ) {
 				echo '  ' . (isset($item['file']) ? $item['file'] : '<unknown file>');
 				echo ' ' . (isset($item['line']) ? $item['line'] : '<unknown line>') . ' ';
 				echo 'calling ' . $item['function'] . '()' . "\n";
 			}
 		} else {
+			if ( ! empty( $file_pos ) ) {
+				$file_pos = '<br />' . $file_pos;
+			}
+
 			echo '<p class="error_backtrace">' . "\n";
 			echo '  <strong>' . $message . '</strong><br />' . "\n";
 			echo '  Backtrace from ' . $type . $file_pos . ':' . "\n";
 			echo '  <ol>' . "\n";
 			foreach ( $trace as $item ) {
 				echo '	<li>' . (isset($item['file']) ? $item['file'] : '<unknown file>');
-				echo ' ' . (isset($item['line']) ? $item['line'] : '<unknown line>') . ' ';
+				echo ' [line ' . (isset($item['line']) ? $item['line'] : '?') . '] ';
 				echo 'calling ' . $item['function'] . '()</li>' . "\n";
 			}
 			echo '  </ol>' . "\n";
@@ -108,7 +116,7 @@ class No_White_Screen_Of_Death {
 					(isset($item['line']) ? $item['line'] : '<unknown line>') .
 					' calling ' . $item['function'] . '()';
 			}
-			$message = 'Backtrace from ' . $type . ' "' . $message . '"' . $file_pos . ': ' . join( ' | ', $items );
+			$message = 'Backtrace from ' . $type . ' "' . $message . '"' . $file_pos . '' . join( ' | ', $items );
 			error_log( $message );
 		}
 
