@@ -48,25 +48,32 @@ class No_White_Screen_Of_Death {
 
 	public function process_error( $errno, $errstr, $errfile, $errline ) {
 		switch ( $errno ) {
-			case E_WARNING:
-			case E_USER_WARNING:
 			case E_STRICT:
 			case E_NOTICE:
 			case E_DEPRECATED:
 			case E_USER_NOTICE:
+				$type = 'notice';
+				$fatal = false;
+				$color = '#0AD';
+				break;
+
+			case E_WARNING:
+			case E_USER_WARNING:
 				$type = 'warning';
 				$fatal = false;
+				$color = '#EA0';
 				break;
 
 			default:
 				$type = 'fatal error';
 				$fatal = true;
+				$color = '#F00';
 				break;
 		}
 
 
 		$trace = debug_backtrace();
-		$this->dump( $errstr, $type, $trace, $errfile, $errline );
+		$this->dump( $errstr, $type, $trace, $errfile, $errline, $color );
 
 		if ( $fatal ) {
 			echo '<h1>Fatal error. Terminate request!</h1>';
@@ -74,7 +81,7 @@ class No_White_Screen_Of_Death {
 		}
 	}
 
-	private function dump( $message, $type, $trace, $err_file = false, $err_line = false ) {
+	private function dump( $message, $type, $trace, $err_file = false, $err_line = false, $color = '#AAA' ) {
 		if ( ! empty( $err_file ) ) {
 			$file_pos = "In $err_file [line $err_line]";
 		} else {
@@ -95,7 +102,17 @@ class No_White_Screen_Of_Death {
 			if ( ! empty( $file_pos ) ) {
 				$file_pos = '<br />' . $file_pos;
 			}
+			
+			$style_list = array(
+				'padding' => '1px 10px',
+				'border-left' => '5px solid ' . $color,
+			);
+			$styles = '';
+			foreach ( $style_list as $name => $value ) {
+				$styles .= $name . ':' . $value . ';';
+			}
 
+			echo '<div style="' . $styles . '">';
 			echo '<p class="error_backtrace">' . "\n";
 			echo '  <strong>' . $message . '</strong><br />' . "\n";
 			echo '  Backtrace from ' . $type . $file_pos . ':' . "\n";
@@ -106,7 +123,7 @@ class No_White_Screen_Of_Death {
 				echo 'calling ' . $item['function'] . '()</li>' . "\n";
 			}
 			echo '  </ol>' . "\n";
-			echo '</p><hr />' . "\n";
+			echo '</p></div><hr />' . "\n";
 		}
 
 		if ( ini_get( 'log_errors' ) ) {
