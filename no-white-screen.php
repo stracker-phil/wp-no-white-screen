@@ -134,6 +134,6 @@ class No_White_Screen_Of_Death {
 	}
 }
 
-if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+if ( ( defined( 'WP_DEBUG' ) && WP_DEBUG ) || ( defined( 'WP_DEBUG_CORE' ) && WP_DEBUG_CORE ) ) {
 	No_White_Screen_Of_Death::instance();
 }
