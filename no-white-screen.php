@@ -15,6 +15,7 @@
  * -----------------------------------------------------------------------------
  *
  * Author: Philipp Stracker (philipp@stracker.net)
+ * Contributors: Sabatino Masala (Masalasabatino@gmail.com)
  */
 
 class No_White_Screen_Of_Death {
