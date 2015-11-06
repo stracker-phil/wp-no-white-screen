@@ -77,7 +77,32 @@ class No_White_Screen_Of_Death {
 
 		if ( $fatal ) {
 			echo '<h1>Fatal error. Terminate request!</h1>';
-			exit( 1 );
+			die();
+		}
+	}
+
+	public function process_shutdown() {
+
+		$errfile = "unknown file";
+		$errstr  = "shutdown";
+		$errno = -1;
+		$errline = 0;
+
+		$error = error_get_last();
+
+		if( $error !== NULL) {
+			$errno   = $error["type"];
+			$errfile = $error["file"];
+			$errline = $error["line"];
+			$errstr  = $error["message"];
+		}
+
+		$trace = debug_backtrace();
+
+		// if we don't have an error we don't want to trace it, because it's most likely triggerd by 'die()' or 'exit()'
+		if ($errno != -1) {
+			$this->dump( $errstr, $errno, $trace, $errfile, $errline, '#FF0000' );
+			exit;
 		}
 	}
 
@@ -148,6 +173,8 @@ class No_White_Screen_Of_Death {
 
 		set_error_handler( array( $this, 'process_error' ) );
 		set_exception_handler( array( $this, 'process_exception' ) );
+		register_shutdown_function( array( $this, 'process_shutdown' ) );
+
 	}
 }
 
