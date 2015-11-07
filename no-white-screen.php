@@ -15,6 +15,7 @@
  * -----------------------------------------------------------------------------
  *
  * Author: Philipp Stracker (philipp@stracker.net)
+ * Contributors: Sabatino Masala (Masalasabatino@gmail.com)
  */
 
 class No_White_Screen_Of_Death {
@@ -46,7 +47,8 @@ class No_White_Screen_Of_Death {
 		);
 	}
 
-	public function process_error( $errno, $errstr, $errfile, $errline ) {
+	private function processError( $errno ) {
+
 		switch ( $errno ) {
 			case E_STRICT:
 			case E_NOTICE:
@@ -64,6 +66,12 @@ class No_White_Screen_Of_Death {
 				$color = '#EA0';
 				break;
 
+			case E_PARSE:
+				$type = 'Compile-time parse error';
+				$fatal = true;
+				$color = '#F00';
+				break;
+
 			default:
 				$type = 'fatal error';
 				$fatal = true;
@@ -71,14 +79,46 @@ class No_White_Screen_Of_Death {
 				break;
 		}
 
+		return [
+			'type' => $type,
+			'fatal' => $fatal,
+			'color' => $color
+		];
+	}
+
+	public function process_error( $errno, $errstr, $errfile, $errline ) {
+
+		$processedError = $this->processError( $errno );
+
+		$type = $processedError['type'];
+		$fatal = $processedError['fatal'];
+		$color = $processedError['color'];
 
 		$trace = debug_backtrace();
 		$this->dump( $errstr, $type, $trace, $errfile, $errline, $color );
 
 		if ( $fatal ) {
-			echo '<h1>Fatal error. Terminate request!</h1>';
-			exit( 1 );
+			die();
 		}
+	}
+
+	public function process_shutdown() {
+
+		$errfile = "unknown file";
+		$errstr  = "shutdown";
+		$errno = -1;
+		$errline = 0;
+
+		$error = error_get_last();
+
+		if( $error !== NULL) {
+			$errno = $error["type"];
+			$errfile = $error["file"];
+			$errline = $error["line"];
+			$errstr = $error["message"];
+			$this->process_error($errno, $errstr, $errfile, $errline);
+		}
+
 	}
 
 	private function dump( $message, $type, $trace, $err_file = false, $err_line = false, $color = '#AAA' ) {
@@ -148,6 +188,8 @@ class No_White_Screen_Of_Death {
 
 		set_error_handler( array( $this, 'process_error' ) );
 		set_exception_handler( array( $this, 'process_exception' ) );
+		register_shutdown_function( array( $this, 'process_shutdown' ) );
+
 	}
 }
 
